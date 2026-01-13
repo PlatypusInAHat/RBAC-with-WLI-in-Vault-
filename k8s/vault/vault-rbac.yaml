@@ -1,0 +1,114 @@
+---
+# Namespace for Vault
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vault
+  labels:
+    name: vault
+    app: vault
+
+---
+# ServiceAccount for Vault Server
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vault
+  namespace: vault
+  labels:
+    app: vault
+
+---
+# ServiceAccount for Vault Agent Injector
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vault-agent-injector
+  namespace: vault
+  labels:
+    app: vault-agent-injector
+
+---
+# ClusterRole for Vault Server
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: vault
+  labels:
+    app: vault
+rules:
+  # Required for Kubernetes auth backend
+  - apiGroups: [""]
+    resources: ["serviceaccounts"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["serviceaccounts/token"]
+    verbs: ["create"]
+  # Required for token review
+  - apiGroups: ["authentication.k8s.io"]
+    resources: ["tokenreviews"]
+    verbs: ["create"]
+  # Required for subject access review
+  - apiGroups: ["authorization.k8s.io"]
+    resources: ["subjectaccessreviews"]
+    verbs: ["create"]
+
+---
+# ClusterRoleBinding for Vault Server
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: vault
+  labels:
+    app: vault
+subjects:
+  - kind: ServiceAccount
+    name: vault
+    namespace: vault
+roleRef:
+  kind: ClusterRole
+  name: vault
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# ClusterRole for Vault Agent Injector
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: vault-agent-injector
+  labels:
+    app: vault-agent-injector
+rules:
+  # Mutating webhook needs to read pods
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  # Need to patch pods for injection
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["patch"]
+  # Need to read secrets for TLS
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch"]
+  # Need to read mutating webhook configs
+  - apiGroups: ["admissionregistration.k8s.io"]
+    resources: ["mutatingwebhookconfigurations"]
+    verbs: ["get", "list", "watch", "patch"]
+
+---
+# ClusterRoleBinding for Vault Agent Injector
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: vault-agent-injector
+  labels:
+    app: vault-agent-injector
+subjects:
+  - kind: ServiceAccount
+    name: vault-agent-injector
+    namespace: vault
+roleRef:
+  kind: ClusterRole
+  name: vault-agent-injector
+  apiGroup: rbac.authorization.k8s.io

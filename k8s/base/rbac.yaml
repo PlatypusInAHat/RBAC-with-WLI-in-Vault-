@@ -1,0 +1,182 @@
+---
+# ServiceAccount for Backend
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: bloodbank-backend-sa
+  namespace: bloodbank
+  labels:
+    app: bloodbank
+    component: backend
+  annotations:
+    # Vault Workload Identity
+    vault.hashicorp.com/agent-inject: "true"
+    vault.hashicorp.com/role: "bloodbank-backend"
+
+---
+# ServiceAccount for Frontend
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: bloodbank-frontend-sa
+  namespace: bloodbank
+  labels:
+    app: bloodbank
+    component: frontend
+  annotations:
+    # Vault Workload Identity
+    vault.hashicorp.com/agent-inject: "true"
+    vault.hashicorp.com/role: "bloodbank-frontend"
+
+---
+# ServiceAccount for PostgreSQL
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: bloodbank-postgres-sa
+  namespace: bloodbank
+  labels:
+    app: bloodbank
+    component: database
+  annotations:
+    # Vault Workload Identity
+    vault.hashicorp.com/agent-inject: "true"
+    vault.hashicorp.com/role: "bloodbank-postgres"
+
+---
+# Role: Secret Reader (for backend to read secrets)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: secret-reader
+  namespace: bloodbank
+  labels:
+    app: bloodbank
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch"]
+
+---
+# Role: ConfigMap Reader (for all services)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: configmap-reader
+  namespace: bloodbank
+  labels:
+    app: bloodbank
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "watch"]
+
+---
+# Role: Pod Reader (for service discovery)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pod-reader
+  namespace: bloodbank
+  labels:
+    app: bloodbank
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["endpoints"]
+    verbs: ["get", "list", "watch"]
+
+---
+# RoleBinding: Backend can read secrets
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: backend-secret-reader
+  namespace: bloodbank
+  labels:
+    app: bloodbank
+subjects:
+  - kind: ServiceAccount
+    name: bloodbank-backend-sa
+    namespace: bloodbank
+roleRef:
+  kind: Role
+  name: secret-reader
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# RoleBinding: All services can read configmaps
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: all-configmap-reader
+  namespace: bloodbank
+  labels:
+    app: bloodbank
+subjects:
+  - kind: ServiceAccount
+    name: bloodbank-backend-sa
+    namespace: bloodbank
+  - kind: ServiceAccount
+    name: bloodbank-frontend-sa
+    namespace: bloodbank
+  - kind: ServiceAccount
+    name: bloodbank-postgres-sa
+    namespace: bloodbank
+roleRef:
+  kind: Role
+  name: configmap-reader
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# RoleBinding: Backend can read pods for service discovery
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: backend-pod-reader
+  namespace: bloodbank
+  labels:
+    app: bloodbank
+subjects:
+  - kind: ServiceAccount
+    name: bloodbank-backend-sa
+    namespace: bloodbank
+roleRef:
+  kind: Role
+  name: pod-reader
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# ClusterRole: Vault auth delegator (required for Vault Kubernetes auth)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: system:auth-delegator-bloodbank
+  labels:
+    app: bloodbank
+rules:
+  - apiGroups: ["authentication.k8s.io"]
+    resources: ["tokenreviews"]
+    verbs: ["create"]
+  - apiGroups: ["authorization.k8s.io"]
+    resources: ["subjectaccessreviews"]
+    verbs: ["create"]
+
+---
+# ClusterRoleBinding: Bind auth delegator to backend SA
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: bloodbank-backend-auth-delegator
+  labels:
+    app: bloodbank
+subjects:
+  - kind: ServiceAccount
+    name: bloodbank-backend-sa
+    namespace: bloodbank
+roleRef:
+  kind: ClusterRole
+  name: system:auth-delegator-bloodbank
+  apiGroup: rbac.authorization.k8s.io

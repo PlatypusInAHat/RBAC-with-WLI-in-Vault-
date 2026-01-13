@@ -1,0 +1,62 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: bloodbank
+  labels:
+    app: bloodbank
+    component: database
+spec:
+  type: ClusterIP
+  selector:
+    app: bloodbank
+    component: database
+  ports:
+    - name: postgresql
+      port: 5432
+      targetPort: 5432
+      protocol: TCP
+  sessionAffinity: None
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: bloodbank
+  labels:
+    app: bloodbank
+    component: backend
+spec:
+  type: ClusterIP
+  selector:
+    app: bloodbank
+    component: backend
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+      protocol: TCP
+  sessionAffinity: None
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: bloodbank
+  labels:
+    app: bloodbank
+    component: frontend
+spec:
+  type: LoadBalancer
+  selector:
+    app: bloodbank
+    component: frontend
+  ports:
+    - name: http
+      port: 3080
+      targetPort: 3000
+      protocol: TCP
+  sessionAffinity: None

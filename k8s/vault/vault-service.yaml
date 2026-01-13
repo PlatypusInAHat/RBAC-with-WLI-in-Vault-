@@ -1,0 +1,82 @@
+---
+# Service for Vault (ClusterIP - internal access)
+apiVersion: v1
+kind: Service
+metadata:
+  name: vault
+  namespace: vault
+  labels:
+    app: vault
+spec:
+  type: ClusterIP
+  selector:
+    app: vault
+  ports:
+    - name: http
+      port: 8200
+      targetPort: 8200
+      protocol: TCP
+    - name: https-internal
+      port: 8201
+      targetPort: 8201
+      protocol: TCP
+
+---
+# Service for Vault Internal (Headless for StatefulSet)
+apiVersion: v1
+kind: Service
+metadata:
+  name: vault-internal
+  namespace: vault
+  labels:
+    app: vault
+spec:
+  clusterIP: None
+  selector:
+    app: vault
+  ports:
+    - name: http
+      port: 8200
+      targetPort: 8200
+    - name: https-internal
+      port: 8201
+      targetPort: 8201
+
+---
+# Service for Vault (NodePort - external access for testing)
+apiVersion: v1
+kind: Service
+metadata:
+  name: vault-external
+  namespace: vault
+  labels:
+    app: vault
+spec:
+  type: NodePort
+  selector:
+    app: vault
+  ports:
+    - name: http
+      port: 8200
+      targetPort: 8200
+      nodePort: 30820
+      protocol: TCP
+
+---
+# Service for Vault Agent Injector
+apiVersion: v1
+kind: Service
+metadata:
+  name: vault-agent-injector-svc
+  namespace: vault
+  labels:
+    app: vault-agent-injector
+spec:
+  type: ClusterIP
+  selector:
+    app: vault-agent-injector
+  ports:
+    - name: https
+      port: 443
+      targetPort: 8080
+      protocol: TCP

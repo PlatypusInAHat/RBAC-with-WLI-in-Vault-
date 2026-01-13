@@ -1,0 +1,40 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: bloodbank-cluster
+
+# Simplified 1-node cluster for testing
+nodes:
+  # Control plane node (also acts as worker)
+  - role: control-plane
+    kubeadmConfigPatches:
+      - |
+        kind: InitConfiguration
+        nodeRegistration:
+          kubeletExtraArgs:
+            node-labels: "ingress-ready=true"
+    extraPortMappings:
+      # HTTP
+      - containerPort: 80
+        hostPort: 80
+        protocol: TCP
+      # HTTPS
+      - containerPort: 443
+        hostPort: 443
+        protocol: TCP
+      # Frontend NodePort
+      - containerPort: 30080
+        hostPort: 30080
+        protocol: TCP
+      # Backend NodePort
+      - containerPort: 30000
+        hostPort: 30000
+        protocol: TCP
+      # Vault NodePort
+      - containerPort: 30820
+        hostPort: 30820
+        protocol: TCP
+
+# Networking configuration
+networking:
+  podSubnet: "10.244.0.0/16"
+  serviceSubnet: "10.96.0.0/12"
