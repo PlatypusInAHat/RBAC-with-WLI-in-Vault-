@@ -1,12 +1,12 @@
----
+﻿---
 # ConfigMap for Frontend ENV configuration
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: frontend-config
-  namespace: bloodbank
+  namespace: prj
   labels:
-    app: bloodbank
+    app: prj
     component: frontend
 data:
   NODE_ENV: "production"
@@ -21,9 +21,9 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: frontend-nginx-conf
-  namespace: bloodbank
+  namespace: prj
   labels:
-    app: bloodbank
+    app: prj
     component: frontend
 data:
   default.conf: |
@@ -53,50 +53,50 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: frontend
-  namespace: bloodbank
+  namespace: prj
   labels:
-    app: bloodbank
+    app: prj
     component: frontend
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: bloodbank
+      app: prj
       component: frontend
   template:
     metadata:
       labels:
-        app: bloodbank
+        app: prj
         component: frontend
       annotations:
         # Vault Agent Injector - Auto-inject secrets
         vault.hashicorp.com/agent-inject: "true"
-        vault.hashicorp.com/role: "bloodbank-frontend"
+        vault.hashicorp.com/role: "prj-frontend"
 
         # Inject frontend secrets
-        vault.hashicorp.com/agent-inject-secret-frontend: "secret/data/bloodbank/frontend"
+        vault.hashicorp.com/agent-inject-secret-frontend: "secret/data/prj/frontend"
         vault.hashicorp.com/agent-inject-template-frontend: |
-          {{- with secret "secret/data/bloodbank/frontend" -}}
+          {{- with secret "secret/data/prj/frontend" -}}
           export API_KEY="{{ .Data.data.api_key }}"
           export NEXT_PUBLIC_API_URL="{{ .Data.data.next_public_api_url }}"
           {{- end -}}
 
         # Inject SHARED secrets (same as backend!)
-        vault.hashicorp.com/agent-inject-secret-shared: "secret/data/bloodbank/shared"
+        vault.hashicorp.com/agent-inject-secret-shared: "secret/data/prj/shared"
         vault.hashicorp.com/agent-inject-template-shared: |
-          {{- with secret "secret/data/bloodbank/shared" -}}
+          {{- with secret "secret/data/prj/shared" -}}
           export ENCRYPTION_KEY="{{ .Data.data.encryption_key }}"
           export SESSION_SECRET="{{ .Data.data.session_secret }}"
           {{- end -}}
     spec:
-      serviceAccountName: bloodbank-frontend-sa
+      serviceAccountName: prj-frontend-sa
       securityContext:
         runAsNonRoot: true
         runAsUser: 1001
         fsGroup: 1001
       containers:
         - name: frontend
-          image: bloodbank-frontend:latest
+          image: prj-frontend:latest
           imagePullPolicy: IfNotPresent
           envFrom:
             - configMapRef:

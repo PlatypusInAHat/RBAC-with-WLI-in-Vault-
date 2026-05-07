@@ -1,4 +1,4 @@
-#!/bin/bash
+﻿#!/bin/bash
 
 # Build script for K8s demo application
 # This script builds Docker images for backend and frontend
@@ -18,19 +18,19 @@ PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$PROJECT_DIR"
 
 echo -e "${BLUE}📦 Building backend image...${NC}"
-docker build -t bloodbank-backend:latest ./backend
+docker build -t prj-backend:latest ./backend
 echo -e "${GREEN}✓ Backend image built successfully${NC}"
 
 echo -e "${BLUE}📦 Building frontend image...${NC}"
-docker build -t bloodbank-frontend:latest ./frontend
+docker build -t prj-frontend:latest ./frontend
 echo -e "${GREEN}✓ Frontend image built successfully${NC}"
 
 echo -e "${GREEN}🎉 All images built successfully!${NC}"
 echo ""
 echo "Images created:"
-echo "  - bloodbank-backend:latest"
-echo "  - bloodbank-frontend:latest"
+echo "  - prj-backend:latest"
+echo "  - prj-frontend:latest"
 echo ""
 echo -e "${YELLOW}💡 Tip: If using kind/minikube, load images with:${NC}"
-echo "  kind load docker-image bloodbank-backend:latest --name <cluster-name>"
-echo "  kind load docker-image bloodbank-frontend:latest --name <cluster-name>"
+echo "  kind load docker-image prj-backend:latest --name <cluster-name>"
+echo "  kind load docker-image prj-frontend:latest --name <cluster-name>"

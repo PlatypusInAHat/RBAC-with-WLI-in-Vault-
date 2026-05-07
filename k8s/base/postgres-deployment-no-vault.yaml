@@ -1,12 +1,12 @@
----
+﻿---
 # ConfigMap for PostgreSQL initialization
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: postgres-config
-  namespace: bloodbank
+  namespace: prj
   labels:
-    app: bloodbank
+    app: prj
     component: database
 data:
   POSTGRES_DB: blood_bank
@@ -18,24 +18,24 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: postgres
-  namespace: bloodbank
+  namespace: prj
   labels:
-    app: bloodbank
+    app: prj
     component: database
 spec:
   serviceName: postgres
   replicas: 1
   selector:
     matchLabels:
-      app: bloodbank
+      app: prj
       component: database
   template:
     metadata:
       labels:
-        app: bloodbank
+        app: prj
         component: database
     spec:
-      serviceAccountName: bloodbank-postgres-sa
+      serviceAccountName: prj-postgres-sa
       securityContext:
         fsGroup: 999 # PostgreSQL GID
         fsGroupChangePolicy: "OnRootMismatch"
@@ -95,7 +95,7 @@ spec:
     - metadata:
         name: postgres-data
         labels:
-          app: bloodbank
+          app: prj
           component: database
       spec:
         accessModes: ["ReadWriteOnce"]

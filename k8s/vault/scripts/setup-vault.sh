@@ -1,4 +1,4 @@
-#!/bin/bash
+﻿#!/bin/bash
 # Setup HashiCorp Vault for Blood Bank Application
 # This script configures Vault with Kubernetes auth and secret sharing
 
@@ -37,25 +37,25 @@ vault secrets enable -version=2 -path=secret kv 2>/dev/null || echo "KV secrets 
 echo "📝 Creating secrets..."
 
 # Database credentials (SHARED: backend + postgres)
-vault kv put secret/bloodbank/database \
+vault kv put secret/prj/database \
   username="postgres" \
   password="changeme" \
-  host="postgres.bloodbank.svc.cluster.local" \
+  host="postgres.prj.svc.cluster.local" \
   port="5432" \
   database="blood_bank"
 
 # Backend-specific secrets
-vault kv put secret/bloodbank/backend \
-  jwt_secret="bloodbank-jwt-secret-key-2024-very-secure" \
+vault kv put secret/prj/backend \
+  jwt_secret="prj-jwt-secret-key-2024-very-secure" \
   api_key="11102004"
 
 # Frontend-specific secrets
-vault kv put secret/bloodbank/frontend \
+vault kv put secret/prj/frontend \
   api_key="frontend-api-key-2024" \
-  next_public_api_url="http://backend.bloodbank.svc.cluster.local:3000/api"
+  next_public_api_url="http://backend.prj.svc.cluster.local:3000/api"
 
 # SHARED secrets (backend + frontend)
-vault kv put secret/bloodbank/shared \
+vault kv put secret/prj/shared \
   encryption_key="shared-encryption-key-very-secure-2024" \
   session_secret="shared-session-secret-2024"
 
@@ -67,15 +67,15 @@ echo "📝 Creating Vault policies..."
 # Backend policy
 vault policy write backend-policy - <<EOF
 # Backend Policy
-path "secret/data/bloodbank/database" {
+path "secret/data/prj/database" {
   capabilities = ["read"]
 }
 
-path "secret/data/bloodbank/backend" {
+path "secret/data/prj/backend" {
   capabilities = ["read"]
 }
 
-path "secret/data/bloodbank/shared" {
+path "secret/data/prj/shared" {
   capabilities = ["read"]
 }
 EOF
@@ -83,11 +83,11 @@ EOF
 # Frontend policy
 vault policy write frontend-policy - <<EOF
 # Frontend Policy
-path "secret/data/bloodbank/frontend" {
+path "secret/data/prj/frontend" {
   capabilities = ["read"]
 }
 
-path "secret/data/bloodbank/shared" {
+path "secret/data/prj/shared" {
   capabilities = ["read"]
 }
 EOF
@@ -95,7 +95,7 @@ EOF
 # PostgreSQL policy
 vault policy write postgres-policy - <<EOF
 # PostgreSQL Policy
-path "secret/data/bloodbank/database" {
+path "secret/data/prj/database" {
   capabilities = ["read"]
 }
 EOF
@@ -106,23 +106,23 @@ echo "✅ Policies created successfully"
 echo "📝 Creating Kubernetes roles..."
 
 # Backend role
-vault write auth/kubernetes/role/bloodbank-backend \
-  bound_service_account_names=bloodbank-backend-sa \
-  bound_service_account_namespaces=bloodbank \
+vault write auth/kubernetes/role/prj-backend \
+  bound_service_account_names=prj-backend-sa \
+  bound_service_account_namespaces=prj \
   policies=backend-policy \
   ttl=24h
 
 # Frontend role
-vault write auth/kubernetes/role/bloodbank-frontend \
-  bound_service_account_names=bloodbank-frontend-sa \
-  bound_service_account_namespaces=bloodbank \
+vault write auth/kubernetes/role/prj-frontend \
+  bound_service_account_names=prj-frontend-sa \
+  bound_service_account_namespaces=prj \
   policies=frontend-policy \
   ttl=24h
 
 # PostgreSQL role
-vault write auth/kubernetes/role/bloodbank-postgres \
-  bound_service_account_names=bloodbank-postgres-sa \
-  bound_service_account_namespaces=bloodbank \
+vault write auth/kubernetes/role/prj-postgres \
+  bound_service_account_names=prj-postgres-sa \
+  bound_service_account_namespaces=prj \
   policies=postgres-policy \
   ttl=24h
 
@@ -132,7 +132,7 @@ echo "✅ Kubernetes roles created successfully"
 echo ""
 echo "🔍 Verifying setup..."
 echo "Secrets:"
-vault kv list secret/bloodbank/
+vault kv list secret/prj/
 echo ""
 echo "Policies:"
 vault policy list | grep -E "backend|frontend|postgres"
@@ -146,13 +146,13 @@ echo "📋 Secret Sharing Matrix:"
 echo "┌──────────────────────────┬─────────┬──────────┬────────────┐"
 echo "│ Secret Path              │ Backend │ Frontend │ PostgreSQL │"
 echo "├──────────────────────────┼─────────┼──────────┼────────────┤"
-echo "│ bloodbank/database       │   ✓     │    ✗     │     ✓      │"
-echo "│ bloodbank/backend        │   ✓     │    ✗     │     ✗      │"
-echo "│ bloodbank/frontend       │   ✗     │    ✓     │     ✗      │"
-echo "│ bloodbank/shared         │   ✓     │    ✓     │     ✗      │"
+echo "│ prj/database       │   ✓     │    ✗     │     ✓      │"
+echo "│ prj/backend        │   ✓     │    ✗     │     ✗      │"
+echo "│ prj/frontend       │   ✗     │    ✓     │     ✗      │"
+echo "│ prj/shared         │   ✓     │    ✓     │     ✗      │"
 echo "└──────────────────────────┴─────────┴──────────┴────────────┘"
 echo ""
 echo "🎯 Next steps:"
 echo "1. Deploy application: kubectl apply -f k8s/base/"
-echo "2. Check Vault injection: kubectl logs -n bloodbank <pod> -c vault-agent-init"
-echo "3. Verify secrets: kubectl exec -n bloodbank <pod> -- cat /vault/secrets/database"
+echo "2. Check Vault injection: kubectl logs -n prj <pod> -c vault-agent-init"
+echo "3. Verify secrets: kubectl exec -n prj <pod> -- cat /vault/secrets/database"

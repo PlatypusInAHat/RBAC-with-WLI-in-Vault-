@@ -1,47 +1,47 @@
----
+﻿---
 # ServiceAccount for Backend
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: bloodbank-backend-sa
-  namespace: bloodbank
+  name: prj-backend-sa
+  namespace: prj
   labels:
-    app: bloodbank
+    app: prj
     component: backend
   annotations:
     # Vault Workload Identity
     vault.hashicorp.com/agent-inject: "true"
-    vault.hashicorp.com/role: "bloodbank-backend"
+    vault.hashicorp.com/role: "prj-backend"
 
 ---
 # ServiceAccount for Frontend
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: bloodbank-frontend-sa
-  namespace: bloodbank
+  name: prj-frontend-sa
+  namespace: prj
   labels:
-    app: bloodbank
+    app: prj
     component: frontend
   annotations:
     # Vault Workload Identity
     vault.hashicorp.com/agent-inject: "true"
-    vault.hashicorp.com/role: "bloodbank-frontend"
+    vault.hashicorp.com/role: "prj-frontend"
 
 ---
 # ServiceAccount for PostgreSQL
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: bloodbank-postgres-sa
-  namespace: bloodbank
+  name: prj-postgres-sa
+  namespace: prj
   labels:
-    app: bloodbank
+    app: prj
     component: database
   annotations:
     # Vault Workload Identity
     vault.hashicorp.com/agent-inject: "true"
-    vault.hashicorp.com/role: "bloodbank-postgres"
+    vault.hashicorp.com/role: "prj-postgres"
 
 ---
 # Role: Secret Reader (for backend to read secrets)
@@ -49,9 +49,9 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: secret-reader
-  namespace: bloodbank
+  namespace: prj
   labels:
-    app: bloodbank
+    app: prj
 rules:
   - apiGroups: [""]
     resources: ["secrets"]
@@ -63,9 +63,9 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: configmap-reader
-  namespace: bloodbank
+  namespace: prj
   labels:
-    app: bloodbank
+    app: prj
 rules:
   - apiGroups: [""]
     resources: ["configmaps"]
@@ -77,9 +77,9 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: pod-reader
-  namespace: bloodbank
+  namespace: prj
   labels:
-    app: bloodbank
+    app: prj
 rules:
   - apiGroups: [""]
     resources: ["pods"]
@@ -94,13 +94,13 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: backend-secret-reader
-  namespace: bloodbank
+  namespace: prj
   labels:
-    app: bloodbank
+    app: prj
 subjects:
   - kind: ServiceAccount
-    name: bloodbank-backend-sa
-    namespace: bloodbank
+    name: prj-backend-sa
+    namespace: prj
 roleRef:
   kind: Role
   name: secret-reader
@@ -112,19 +112,19 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: all-configmap-reader
-  namespace: bloodbank
+  namespace: prj
   labels:
-    app: bloodbank
+    app: prj
 subjects:
   - kind: ServiceAccount
-    name: bloodbank-backend-sa
-    namespace: bloodbank
+    name: prj-backend-sa
+    namespace: prj
   - kind: ServiceAccount
-    name: bloodbank-frontend-sa
-    namespace: bloodbank
+    name: prj-frontend-sa
+    namespace: prj
   - kind: ServiceAccount
-    name: bloodbank-postgres-sa
-    namespace: bloodbank
+    name: prj-postgres-sa
+    namespace: prj
 roleRef:
   kind: Role
   name: configmap-reader
@@ -136,13 +136,13 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: backend-pod-reader
-  namespace: bloodbank
+  namespace: prj
   labels:
-    app: bloodbank
+    app: prj
 subjects:
   - kind: ServiceAccount
-    name: bloodbank-backend-sa
-    namespace: bloodbank
+    name: prj-backend-sa
+    namespace: prj
 roleRef:
   kind: Role
   name: pod-reader
@@ -153,9 +153,9 @@ roleRef:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: system:auth-delegator-bloodbank
+  name: system:auth-delegator-prj
   labels:
-    app: bloodbank
+    app: prj
 rules:
   - apiGroups: ["authentication.k8s.io"]
     resources: ["tokenreviews"]
@@ -169,14 +169,14 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: bloodbank-backend-auth-delegator
+  name: prj-backend-auth-delegator
   labels:
-    app: bloodbank
+    app: prj
 subjects:
   - kind: ServiceAccount
-    name: bloodbank-backend-sa
-    namespace: bloodbank
+    name: prj-backend-sa
+    namespace: prj
 roleRef:
   kind: ClusterRole
-  name: system:auth-delegator-bloodbank
+  name: system:auth-delegator-prj
   apiGroup: rbac.authorization.k8s.io

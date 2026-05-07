@@ -1,4 +1,4 @@
-# Comprehensive Flow Testing Script
+﻿# Comprehensive Flow Testing Script
 # Tests all K8s features: RBAC, Network, Vault, Secret Sharing
 
 Write-Host "🧪 K8s Demo - Comprehensive Flow Testing" -ForegroundColor Cyan
@@ -51,8 +51,8 @@ Test-Flow "Cluster has 2 nodes" {
     $nodes.Count
 } "2"
 
-Test-Flow "All bloodbank pods running" {
-    kubectl get pods -n bloodbank --field-selector=status.phase=Running --no-headers | Measure-Object | Select-Object -ExpandProperty Count
+Test-Flow "All prj pods running" {
+    kubectl get pods -n prj --field-selector=status.phase=Running --no-headers | Measure-Object | Select-Object -ExpandProperty Count
 } "[3-9]"
 
 Test-Flow "Vault pods running" {
@@ -65,15 +65,15 @@ Write-Host "===========================" -ForegroundColor Cyan
 Write-Host ""
 
 Test-Flow "Backend ServiceAccount exists" {
-    kubectl get sa bloodbank-backend-sa -n bloodbank
+    kubectl get sa prj-backend-sa -n prj
 }
 
 Test-Flow "Backend SA has Vault annotations" {
-    kubectl get sa bloodbank-backend-sa -n bloodbank -o yaml | Select-String "vault.hashicorp.com"
+    kubectl get sa prj-backend-sa -n prj -o yaml | Select-String "vault.hashicorp.com"
 }
 
 Test-Flow "Secret-reader role exists" {
-    kubectl get role secret-reader -n bloodbank
+    kubectl get role secret-reader -n prj
 }
 
 Test-Flow "Backend can access RBAC API" {
@@ -98,7 +98,7 @@ Test-Flow "Frontend → Backend connectivity" {
 } "200"
 
 Test-Flow "Backend → PostgreSQL (direct IP)" {
-    kubectl exec -n bloodbank deploy/backend -- nc -zv -w 3 10.244.1.12 5432 2>&1
+    kubectl exec -n prj deploy/backend -- nc -zv -w 3 10.244.1.12 5432 2>&1
 } "open"
 
 Write-Host ""
@@ -114,7 +114,7 @@ Test-Flow "Vault API endpoint accessible" {
 Test-Flow "Vault role configured" {
     $response = Invoke-WebRequest -Uri "http://localhost:30000/api/vault" -UseBasicParsing | ConvertFrom-Json
     $response.vaultAgent.role
-} "bloodbank-backend"
+} "prj-backend"
 
 Test-Flow "Vault policies exist" {
     Test-Path "k8s\vault\backend-policy.hcl"
@@ -143,15 +143,15 @@ Write-Host "===========================" -ForegroundColor Cyan
 Write-Host ""
 
 Test-Flow "Network policies applied" {
-    kubectl get networkpolicies -n bloodbank --no-headers | Measure-Object | Select-Object -ExpandProperty Count
+    kubectl get networkpolicies -n prj --no-headers | Measure-Object | Select-Object -ExpandProperty Count
 } "[4-9]"
 
 Test-Flow "Backend network policy exists" {
-    kubectl get networkpolicy backend-netpol -n bloodbank
+    kubectl get networkpolicy backend-netpol -n prj
 }
 
 Test-Flow "PostgreSQL network policy exists" {
-    kubectl get networkpolicy postgres-netpol -n bloodbank
+    kubectl get networkpolicy postgres-netpol -n prj
 }
 
 Write-Host ""

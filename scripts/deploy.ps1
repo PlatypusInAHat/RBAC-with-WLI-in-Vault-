@@ -1,10 +1,10 @@
-# Deploy script for K8s demo application (PowerShell)
+﻿# Deploy script for K8s demo application (PowerShell)
 # This script deploys all resources to Kubernetes cluster
 
-Write-Host "🚀 Deploying K8s demo application..." -ForegroundColor Cyan
+Write-Host "Deploying K8s demo application..." -ForegroundColor Cyan
 
 # Change to project directory
-$ProjectDir = Split-Path -Parent $PSScriptRoot
+$ProjectDir = "d:\k8\RBAC-with-WLI-in-Vault-"
 $K8sDir = Join-Path $ProjectDir "k8s"
 
 Write-Host ""
@@ -16,6 +16,7 @@ Write-Host ""
 Write-Host "Step 2: Deploying Vault..." -ForegroundColor Blue
 kubectl apply -f (Join-Path $K8sDir "vault\vault-deployment.yaml")
 kubectl apply -f (Join-Path $K8sDir "vault\vault-service.yaml")
+kubectl apply -f (Join-Path $K8sDir "vault\vault-injector-webhook.yaml")
 
 Write-Host ""
 Write-Host "Step 3: Creating RBAC rules..." -ForegroundColor Blue
@@ -54,18 +55,8 @@ Write-Host "Step 11: Creating ingress..." -ForegroundColor Blue
 kubectl apply -f (Join-Path $K8sDir "base\ingress.yaml")
 
 Write-Host ""
-Write-Host "🎉 Deployment complete!" -ForegroundColor Green
+Write-Host "Deployment complete!" -ForegroundColor Green
 Write-Host ""
 Write-Host "Check deployment status:" -ForegroundColor Cyan
-Write-Host "  kubectl get pods -n bloodbank"
+Write-Host "  kubectl get pods -n prj"
 Write-Host "  kubectl get pods -n vault"
-Write-Host ""
-Write-Host "Access services:" -ForegroundColor Cyan
-Write-Host "  Frontend: kubectl port-forward -n bloodbank svc/frontend 30080:3000"
-Write-Host "  Backend:  kubectl port-forward -n bloodbank svc/backend 30000:3000"
-Write-Host "  Vault:    kubectl port-forward -n vault svc/vault 8200:8200"
-Write-Host ""
-Write-Host "Then open in browser:" -ForegroundColor Cyan
-Write-Host "  Frontend: http://localhost:30080"
-Write-Host "  Backend:  http://localhost:30000"
-Write-Host "  Vault UI: http://localhost:8200"

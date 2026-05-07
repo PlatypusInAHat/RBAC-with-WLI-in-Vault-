@@ -1,4 +1,4 @@
-# Quick Access Script - Open K8s Demo Applications
+﻿# Quick Access Script - Open K8s Demo Applications
 # Use this instead of port-forward for easier access
 
 Write-Host "🌐 Opening K8s Demo Applications..." -ForegroundColor Cyan
@@ -9,8 +9,8 @@ Write-Host "Opening services via minikube service..." -ForegroundColor Blue
 Write-Host ""
 
 # Get URLs
-$FRONTEND_URL = minikube service frontend -n bloodbank --url
-$BACKEND_URL = minikube service backend -n bloodbank --url
+$FRONTEND_URL = minikube service frontend -n prj --url
+$BACKEND_URL = minikube service backend -n prj --url
 
 Write-Host "✓ Service URLs:" -ForegroundColor Green
 Write-Host "  Frontend: $FRONTEND_URL" -ForegroundColor Cyan

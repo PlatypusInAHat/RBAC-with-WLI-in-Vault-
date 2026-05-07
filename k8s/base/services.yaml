@@ -1,16 +1,16 @@
----
+﻿---
 apiVersion: v1
 kind: Service
 metadata:
   name: postgres
-  namespace: bloodbank
+  namespace: prj
   labels:
-    app: bloodbank
+    app: prj
     component: database
 spec:
   type: ClusterIP
   selector:
-    app: bloodbank
+    app: prj
     component: database
   ports:
     - name: postgresql
@@ -24,14 +24,14 @@ apiVersion: v1
 kind: Service
 metadata:
   name: backend
-  namespace: bloodbank
+  namespace: prj
   labels:
-    app: bloodbank
+    app: prj
     component: backend
 spec:
   type: ClusterIP
   selector:
-    app: bloodbank
+    app: prj
     component: backend
   ports:
     - name: http
@@ -45,14 +45,14 @@ apiVersion: v1
 kind: Service
 metadata:
   name: frontend
-  namespace: bloodbank
+  namespace: prj
   labels:
-    app: bloodbank
+    app: prj
     component: frontend
 spec:
   type: LoadBalancer
   selector:
-    app: bloodbank
+    app: prj
     component: frontend
   ports:
     - name: http

@@ -1,4 +1,4 @@
-#!/bin/bash
+﻿#!/bin/bash
 # Vault setup script for K8s demo
 # This script configures Vault with policies and roles for workload identity
 
@@ -25,25 +25,25 @@ vault secrets enable -path=secret kv-v2 || echo "KV engine already enabled"
 echo -e "${BLUE}Step 2: Creating demo secrets...${NC}"
 
 # Backend secrets
-vault kv put secret/bloodbank/backend \
+vault kv put secret/prj/backend \
   jwt_secret="demo-jwt-secret-key-2024" \
   api_key="11102004"
 
 # Frontend secrets  
-vault kv put secret/bloodbank/frontend \
+vault kv put secret/prj/frontend \
   api_key="11102004" \
-  next_public_api_url="http://backend-internal.bloodbank.svc.cluster.local:3000"
+  next_public_api_url="http://backend-internal.prj.svc.cluster.local:3000"
 
 # Database secrets
-vault kv put secret/bloodbank/database \
+vault kv put secret/prj/database \
   username="postgres" \
-  password="bloodbank2024secure" \
-  host="postgres.bloodbank.svc.cluster.local" \
+  password="prj2024secure" \
+  host="postgres.prj.svc.cluster.local" \
   port="5432" \
   database="blood_bank"
 
 # Shared secrets (accessible by both backend and frontend)
-vault kv put secret/bloodbank/shared \
+vault kv put secret/prj/shared \
   encryption_key="shared-encryption-key-demo-2024" \
   session_secret="shared-session-secret-demo-2024"
 
@@ -64,40 +64,40 @@ vault write auth/kubernetes/config \
 echo -e "${BLUE}Step 5: Creating Vault policies...${NC}"
 
 # Backend policy
-vault policy write bloodbank-backend - <<EOF
+vault policy write prj-backend - <<EOF
 # Read backend secrets
-path "secret/data/bloodbank/backend" {
+path "secret/data/prj/backend" {
   capabilities = ["read"]
 }
 
 # Read database secrets
-path "secret/data/bloodbank/database" {
+path "secret/data/prj/database" {
   capabilities = ["read"]
 }
 
 # Read shared secrets
-path "secret/data/bloodbank/shared" {
+path "secret/data/prj/shared" {
   capabilities = ["read"]
 }
 EOF
 
 # Frontend policy
-vault policy write bloodbank-frontend - <<EOF
+vault policy write prj-frontend - <<EOF
 # Read frontend secrets
-path "secret/data/bloodbank/frontend" {
+path "secret/data/prj/frontend" {
   capabilities = ["read"]
 }
 
 # Read shared secrets (same as backend!)
-path "secret/data/bloodbank/shared" {
+path "secret/data/prj/shared" {
   capabilities = ["read"]
 }
 EOF
 
 # PostgreSQL policy
-vault policy write bloodbank-postgres - <<EOF
+vault policy write prj-postgres - <<EOF
 # Read database secrets
-path "secret/data/bloodbank/database" {
+path "secret/data/prj/database" {
   capabilities = ["read"]
 }
 EOF
@@ -107,24 +107,24 @@ echo -e "${GREEN}✓ Policies created${NC}"
 echo -e "${BLUE}Step 6: Creating Kubernetes auth roles...${NC}"
 
 # Backend role
-vault write auth/kubernetes/role/bloodbank-backend \
-  bound_service_account_names=bloodbank-backend-sa \
-  bound_service_account_namespaces=bloodbank \
-  policies=bloodbank-backend \
+vault write auth/kubernetes/role/prj-backend \
+  bound_service_account_names=prj-backend-sa \
+  bound_service_account_namespaces=prj \
+  policies=prj-backend \
   ttl=24h
 
 # Frontend role
-vault write auth/kubernetes/role/bloodbank-frontend \
-  bound_service_account_names=bloodbank-frontend-sa \
-  bound_service_account_namespaces=bloodbank \
-  policies=bloodbank-frontend \
+vault write auth/kubernetes/role/prj-frontend \
+  bound_service_account_names=prj-frontend-sa \
+  bound_service_account_namespaces=prj \
+  policies=prj-frontend \
   ttl=24h
 
 # PostgreSQL role
-vault write auth/kubernetes/role/bloodbank-postgres \
-  bound_service_account_names=bloodbank-postgres-sa \
-  bound_service_account_namespaces=bloodbank \
-  policies=bloodbank-postgres \
+vault write auth/kubernetes/role/prj-postgres \
+  bound_service_account_names=prj-postgres-sa \
+  bound_service_account_namespaces=prj \
+  policies=prj-postgres \
   ttl=24h
 
 echo -e "${GREEN}✓ Roles created${NC}"
@@ -133,6 +133,6 @@ echo ""
 echo -e "${GREEN}🎉 Vault setup complete!${NC}"
 echo ""
 echo -e "${YELLOW}Verify setup:${NC}"
-echo "  vault kv get secret/bloodbank/backend"
-echo "  vault kv get secret/bloodbank/shared"
-echo "  vault read auth/kubernetes/role/bloodbank-backend"
+echo "  vault kv get secret/prj/backend"
+echo "  vault kv get secret/prj/shared"
+echo "  vault read auth/kubernetes/role/prj-backend"

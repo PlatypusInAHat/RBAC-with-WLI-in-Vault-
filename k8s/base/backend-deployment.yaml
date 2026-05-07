@@ -1,19 +1,19 @@
----
+﻿---
 # ConfigMap for Backend configuration
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: backend-config
-  namespace: bloodbank
+  namespace: prj
   labels:
-    app: bloodbank
+    app: prj
     component: backend
 data:
   NODE_ENV: "production"
   PORT: "3000"
 
   # Database configuration
-  DB_HOST: "postgres.bloodbank.svc.cluster.local"
+  DB_HOST: "postgres.prj.svc.cluster.local"
   DB_PORT: "5432"
   DB_NAME: "blood_bank"
 
@@ -23,30 +23,30 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend
-  namespace: bloodbank
+  namespace: prj
   labels:
-    app: bloodbank
+    app: prj
     component: backend
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: bloodbank
+      app: prj
       component: backend
   template:
     metadata:
       labels:
-        app: bloodbank
+        app: prj
         component: backend
       annotations:
         # Vault Agent Injector - Auto-inject secrets
         vault.hashicorp.com/agent-inject: "true"
-        vault.hashicorp.com/role: "bloodbank-backend"
+        vault.hashicorp.com/role: "prj-backend"
 
         # Inject database credentials
-        vault.hashicorp.com/agent-inject-secret-database: "secret/data/bloodbank/database"
+        vault.hashicorp.com/agent-inject-secret-database: "secret/data/prj/database"
         vault.hashicorp.com/agent-inject-template-database: |
-          {{- with secret "secret/data/bloodbank/database" -}}
+          {{- with secret "secret/data/prj/database" -}}
           export DB_USER="{{ .Data.data.username }}"
           export DB_PASSWORD="{{ .Data.data.password }}"
           export DB_HOST="{{ .Data.data.host }}"
@@ -55,29 +55,29 @@ spec:
           {{- end -}}
 
         # Inject backend secrets
-        vault.hashicorp.com/agent-inject-secret-backend: "secret/data/bloodbank/backend"
+        vault.hashicorp.com/agent-inject-secret-backend: "secret/data/prj/backend"
         vault.hashicorp.com/agent-inject-template-backend: |
-          {{- with secret "secret/data/bloodbank/backend" -}}
+          {{- with secret "secret/data/prj/backend" -}}
           export JWT_SECRET="{{ .Data.data.jwt_secret }}"
           export API_KEY="{{ .Data.data.api_key }}"
           {{- end -}}
 
         # Inject SHARED secrets
-        vault.hashicorp.com/agent-inject-secret-shared: "secret/data/bloodbank/shared"
+        vault.hashicorp.com/agent-inject-secret-shared: "secret/data/prj/shared"
         vault.hashicorp.com/agent-inject-template-shared: |
-          {{- with secret "secret/data/bloodbank/shared" -}}
+          {{- with secret "secret/data/prj/shared" -}}
           export ENCRYPTION_KEY="{{ .Data.data.encryption_key }}"
           export SESSION_SECRET="{{ .Data.data.session_secret }}"
           {{- end -}}
     spec:
-      serviceAccountName: bloodbank-backend-sa
+      serviceAccountName: prj-backend-sa
       securityContext:
         runAsNonRoot: true
         runAsUser: 1001
         fsGroup: 1001
       containers:
         - name: backend
-          image: bloodbank-backend:latest
+          image: prj-backend:latest
           imagePullPolicy: IfNotPresent
           envFrom:
             - configMapRef:

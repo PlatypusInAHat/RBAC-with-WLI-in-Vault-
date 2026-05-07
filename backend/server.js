@@ -1,4 +1,4 @@
-const express = require('express');
+﻿const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
 const { Client } = require('pg');
@@ -83,8 +83,8 @@ app.get('/api/rbac', (req, res) => {
   
   res.json({
     serviceAccount: {
-      name: 'bloodbank-backend-sa',
-      namespace: namespace || 'bloodbank',
+      name: 'prj-backend-sa',
+      namespace: namespace || 'prj',
       hasToken: hasToken
     },
     rbacPermissions: {
@@ -99,7 +99,7 @@ app.get('/api/rbac', (req, res) => {
       'pod-reader'
     ],
     clusterRoles: [
-      'system:auth-delegator-bloodbank'
+      'system:auth-delegator-prj'
     ]
   });
 });
@@ -136,18 +136,18 @@ app.get('/api/vault', (req, res) => {
   res.json({
     vaultAgent: {
       injected: Object.keys(vaultSecrets).length > 0,
-      role: 'bloodbank-backend',
+      role: 'prj-backend',
       secretsPath: '/vault/secrets',
       files: Object.keys(vaultSecrets)
     },
     workloadIdentity: {
       enabled: hasVaultAnnotations,
       authMethod: 'kubernetes',
-      serviceAccount: 'bloodbank-backend-sa'
+      serviceAccount: 'prj-backend-sa'
     },
     secretSharing: {
       enabled: true,
-      sharedWith: ['bloodbank-frontend'],
+      sharedWith: ['prj-frontend'],
       sharedSecrets: ['encryption_key', 'session_secret']
     }
   });

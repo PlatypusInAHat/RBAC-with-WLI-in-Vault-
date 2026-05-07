@@ -1,10 +1,10 @@
-apiVersion: v1
+﻿apiVersion: v1
 kind: Namespace
 metadata:
-  name: bloodbank
+  name: prj
   labels:
-    name: bloodbank
-    app: bloodbank
+    name: prj
+    app: prj
     environment: production
     managed-by: kubectl
     # Enable Vault injection

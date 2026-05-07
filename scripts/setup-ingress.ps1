@@ -1,4 +1,4 @@
-# Setup Ingress Access for K8s Demo
+﻿# Setup Ingress Access for K8s Demo
 # This script configures Ingress for easy access via domain names
 
 Write-Host "🌐 Setting up Ingress access..." -ForegroundColor Cyan
@@ -22,7 +22,7 @@ Start-Sleep -Seconds 30
 
 # Step 3: Check ingress status
 Write-Host "Step 3: Checking ingress status..." -ForegroundColor Blue
-kubectl get ingress -n bloodbank
+kubectl get ingress -n prj
 Write-Host ""
 
 # Step 4: Add hosts file entries
@@ -31,8 +31,8 @@ Write-Host ""
 
 $hostsFile = "C:\Windows\System32\drivers\etc\hosts"
 $entries = @(
-    "127.0.0.1 bloodbank.local",
-    "127.0.0.1 api.bloodbank.local"
+    "127.0.0.1 prj.local",
+    "127.0.0.1 api.prj.local"
 )
 
 Write-Host "Adding entries to hosts file (requires admin):" -ForegroundColor Yellow
@@ -85,8 +85,8 @@ if ($isAdmin) {
     Write-Host "Starting tunnel..." -ForegroundColor Blue
     Write-Host ""
     Write-Host "Once tunnel is running, you can access:" -ForegroundColor Cyan
-    Write-Host "  Frontend: http://bloodbank.local" -ForegroundColor Green
-    Write-Host "  Backend:  http://api.bloodbank.local" -ForegroundColor Green
+    Write-Host "  Frontend: http://prj.local" -ForegroundColor Green
+    Write-Host "  Backend:  http://api.prj.local" -ForegroundColor Green
     Write-Host ""
     Write-Host "Press Ctrl+C to stop the tunnel" -ForegroundColor Yellow
     Write-Host ""

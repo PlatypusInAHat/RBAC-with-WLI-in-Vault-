@@ -1,12 +1,12 @@
----
+﻿---
 # Ingress for Frontend
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: frontend-ingress
-  namespace: bloodbank
+  namespace: prj
   labels:
-    app: bloodbank
+    app: prj
     component: frontend
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
@@ -14,7 +14,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: bloodbank.local
+    - host: prj.local
       http:
         paths:
           - path: /
@@ -31,9 +31,9 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: backend-ingress
-  namespace: bloodbank
+  namespace: prj
   labels:
-    app: bloodbank
+    app: prj
     component: backend
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
@@ -44,7 +44,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: api.bloodbank.local
+    - host: api.prj.local
       http:
         paths:
           - path: /
@@ -62,8 +62,8 @@ spec:
 # apiVersion: v1
 # kind: Secret
 # metadata:
-#   name: bloodbank-tls
-#   namespace: bloodbank
+#   name: prj-tls
+#   namespace: prj
 # type: kubernetes.io/tls
 # data:
 #   tls.crt: <base64-encoded-cert>
@@ -73,6 +73,6 @@ spec:
 # Add to ingress spec:
 #   tls:
 #     - hosts:
-#         - bloodbank.local
-#         - api.bloodbank.local
-#       secretName: bloodbank-tls
+#         - prj.local
+#         - api.prj.local
+#       secretName: prj-tls

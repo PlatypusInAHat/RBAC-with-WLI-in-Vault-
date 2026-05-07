@@ -1,11 +1,11 @@
-# =========================
-# 0) DEFAULT DENY (bloodbank)
+﻿# =========================
+# 0) DEFAULT DENY (prj)
 # =========================
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: default-deny-all
-  namespace: bloodbank
+  namespace: prj
 spec:
   podSelector: {}
   policyTypes:
@@ -22,11 +22,11 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: frontend-netpol
-  namespace: bloodbank
+  namespace: prj
 spec:
   podSelector:
     matchLabels:
-      app: bloodbank
+      app: prj
       component: frontend
   policyTypes:
     - Ingress
@@ -55,7 +55,7 @@ spec:
     - to:
         - podSelector:
             matchLabels:
-              app: bloodbank
+              app: prj
               component: backend
       ports:
         - protocol: TCP
@@ -71,11 +71,11 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: backend-netpol
-  namespace: bloodbank
+  namespace: prj
 spec:
   podSelector:
     matchLabels:
-      app: bloodbank
+      app: prj
       component: backend
   policyTypes:
     - Ingress
@@ -84,7 +84,7 @@ spec:
     - from:
         - podSelector:
             matchLabels:
-              app: bloodbank
+              app: prj
               component: frontend
       ports:
         - protocol: TCP
@@ -109,7 +109,7 @@ spec:
     - to:
         - podSelector:
             matchLabels:
-              app: bloodbank
+              app: prj
               component: database
       ports:
         - protocol: TCP
@@ -125,11 +125,11 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: postgres-netpol
-  namespace: bloodbank
+  namespace: prj
 spec:
   podSelector:
     matchLabels:
-      app: bloodbank
+      app: prj
       component: database
   policyTypes:
     - Ingress
@@ -138,7 +138,7 @@ spec:
     - from:
         - podSelector:
             matchLabels:
-              app: bloodbank
+              app: prj
               component: backend
       ports:
         - protocol: TCP
@@ -168,12 +168,12 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-vault-egress-from-bloodbank
-  namespace: bloodbank
+  name: allow-vault-egress-from-prj
+  namespace: prj
 spec:
   podSelector:
     matchLabels:
-      app: bloodbank
+      app: prj
   policyTypes:
     - Egress
   egress:
@@ -192,7 +192,7 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-bloodbank-to-vault-ingress
+  name: allow-prj-to-vault-ingress
   namespace: vault
 spec:
   podSelector:
@@ -204,7 +204,7 @@ spec:
     - from:
         - namespaceSelector:
             matchLabels:
-              kubernetes.io/metadata.name: bloodbank
+              kubernetes.io/metadata.name: prj
       ports:
         - protocol: TCP
           port: 8200

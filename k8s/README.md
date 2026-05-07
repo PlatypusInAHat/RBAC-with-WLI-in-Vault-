@@ -1,4 +1,4 @@
-# 🚀 Blood Bank Kubernetes Deployment Guide
+﻿# 🚀 Blood Bank Kubernetes Deployment Guide
 
 Complete guide for deploying the Blood Bank application on Kubernetes with HashiCorp Vault for secrets management.
 
@@ -64,7 +64,7 @@ helm version
 ### 1. Clone the Repository
 
 ```powershell
-cd "d:\Project cá nhân\bloodbank"
+cd "d:\Project cá nhân\prj"
 ```
 
 ### 2. Setup Kubernetes Cluster
@@ -109,7 +109,7 @@ cd "d:\Project cá nhân\bloodbank"
 
 ```
 ┌─────────────────────────────────────────────────┐
-│  Kind Cluster (bloodbank-cluster)              │
+│  Kind Cluster (prj-cluster)              │
 │  ┌───────────────────────────────────────────┐ │
 │  │  Control Plane Node                       │ │
 │  │  - API Server                             │ │
@@ -128,7 +128,7 @@ cd "d:\Project cá nhân\bloodbank"
 
 ```
 ┌─────────────────────────────────────────────────┐
-│  Namespace: bloodbank                          │
+│  Namespace: prj                          │
 │                                                │
 │  ┌──────────────┐    ┌──────────────┐         │
 │  │  Frontend    │───▶│   Backend    │         │
@@ -229,10 +229,10 @@ Create roles for each ServiceAccount:
 
 ```bash
 # Backend role
-vault write auth/kubernetes/role/bloodbank-backend \
-    bound_service_account_names=bloodbank-backend-sa \
-    bound_service_account_namespaces=bloodbank \
-    policies=bloodbank-backend \
+vault write auth/kubernetes/role/prj-backend \
+    bound_service_account_names=prj-backend-sa \
+    bound_service_account_namespaces=prj \
+    policies=prj-backend \
     ttl=24h
 ```
 
@@ -242,17 +242,17 @@ Secrets are stored in Vault's KV v2 engine:
 
 ```bash
 # PostgreSQL credentials
-vault kv put secret/bloodbank/postgres \
+vault kv put secret/prj/postgres \
     username=postgres \
-    password=bloodbank2024secure
+    password=prj2024secure
 
 # Backend secrets
-vault kv put secret/bloodbank/backend \
-    jwt_secret=bloodbank-jwt-secret-key-2024-very-secure \
+vault kv put secret/prj/backend \
+    jwt_secret=prj-jwt-secret-key-2024-very-secure \
     api_key=11102004
 
 # Frontend secrets
-vault kv put secret/bloodbank/frontend \
+vault kv put secret/prj/frontend \
     api_key=11102004
 ```
 
@@ -260,9 +260,9 @@ vault kv put secret/bloodbank/frontend \
 
 Each service has its own ServiceAccount:
 
-- **bloodbank-backend-sa**: Can read secrets and configmaps
-- **bloodbank-frontend-sa**: Can read configmaps
-- **bloodbank-postgres-sa**: Can read configmaps
+- **prj-backend-sa**: Can read secrets and configmaps
+- **prj-frontend-sa**: Can read configmaps
+- **prj-postgres-sa**: Can read configmaps
 
 Roles are bound to these ServiceAccounts:
 
@@ -273,7 +273,7 @@ metadata:
   name: backend-secret-reader
 subjects:
   - kind: ServiceAccount
-    name: bloodbank-backend-sa
+    name: prj-backend-sa
 roleRef:
   kind: Role
   name: secret-reader
@@ -286,10 +286,10 @@ Pods use annotations to inject secrets from Vault:
 ```yaml
 annotations:
   vault.hashicorp.com/agent-inject: "true"
-  vault.hashicorp.com/role: "bloodbank-backend"
-  vault.hashicorp.com/agent-inject-secret-database: "secret/data/bloodbank/postgres"
+  vault.hashicorp.com/role: "prj-backend"
+  vault.hashicorp.com/agent-inject-secret-database: "secret/data/prj/postgres"
   vault.hashicorp.com/agent-inject-template-database: |
-    {{- with secret "secret/data/bloodbank/postgres" -}}
+    {{- with secret "secret/data/prj/postgres" -}}
     export DB_USER="{{ .Data.data.username }}"
     export DB_PASSWORD="{{ .Data.data.password }}"
     {{- end -}}
@@ -320,9 +320,9 @@ The Vault Agent Injector:
 Services can communicate using Kubernetes DNS:
 
 ```
-postgres.bloodbank.svc.cluster.local:5432
-backend.bloodbank.svc.cluster.local:3000
-frontend.bloodbank.svc.cluster.local:3000
+postgres.prj.svc.cluster.local:5432
+backend.prj.svc.cluster.local:3000
+frontend.prj.svc.cluster.local:3000
 vault.vault.svc.cluster.local:8200
 ```
 
@@ -331,14 +331,14 @@ vault.vault.svc.cluster.local:8200
 If you install an Ingress controller:
 
 ```
-http://bloodbank.local          → Frontend
-http://api.bloodbank.local      → Backend
+http://prj.local          → Frontend
+http://api.prj.local      → Backend
 ```
 
 Add to `C:\Windows\System32\drivers\etc\hosts`:
 
 ```
-127.0.0.1 bloodbank.local api.bloodbank.local
+127.0.0.1 prj.local api.prj.local
 ```
 
 ---
@@ -349,35 +349,35 @@ Add to `C:\Windows\System32\drivers\etc\hosts`:
 
 ```powershell
 # Backend logs
-kubectl logs -n bloodbank -l component=backend -f
+kubectl logs -n prj -l component=backend -f
 
 # Frontend logs
-kubectl logs -n bloodbank -l component=frontend -f
+kubectl logs -n prj -l component=frontend -f
 
 # PostgreSQL logs
-kubectl logs -n bloodbank -l component=database -f
+kubectl logs -n prj -l component=database -f
 
 # Vault logs
 kubectl logs -n vault -l app=vault -f
 
 # All logs from a pod
-kubectl logs -n bloodbank <pod-name> -f
+kubectl logs -n prj <pod-name> -f
 
 # Logs from Vault sidecar
-kubectl logs -n bloodbank <pod-name> -c vault-agent -f
+kubectl logs -n prj <pod-name> -c vault-agent -f
 ```
 
 ### Shell Access
 
 ```powershell
 # Backend shell
-kubectl exec -it -n bloodbank deployment/backend -- sh
+kubectl exec -it -n prj deployment/backend -- sh
 
 # Frontend shell
-kubectl exec -it -n bloodbank deployment/frontend -- sh
+kubectl exec -it -n prj deployment/frontend -- sh
 
 # PostgreSQL shell
-kubectl exec -it -n bloodbank statefulset/postgres -- psql -U postgres -d blood_bank
+kubectl exec -it -n prj statefulset/postgres -- psql -U postgres -d blood_bank
 
 # Vault shell
 kubectl exec -it -n vault vault-0 -- sh
@@ -387,48 +387,48 @@ kubectl exec -it -n vault vault-0 -- sh
 
 ```powershell
 # Scale backend
-kubectl scale -n bloodbank deployment/backend --replicas=3
+kubectl scale -n prj deployment/backend --replicas=3
 
 # Scale frontend
-kubectl scale -n bloodbank deployment/frontend --replicas=3
+kubectl scale -n prj deployment/frontend --replicas=3
 
 # View current replicas
-kubectl get deployments -n bloodbank
+kubectl get deployments -n prj
 ```
 
 ### Updates
 
 ```powershell
 # Rebuild and update backend
-docker build -t bloodbank-backend:latest ./backend
-kind load docker-image bloodbank-backend:latest --name bloodbank-cluster
-kubectl rollout restart -n bloodbank deployment/backend
+docker build -t prj-backend:latest ./backend
+kind load docker-image prj-backend:latest --name prj-cluster
+kubectl rollout restart -n prj deployment/backend
 
 # Rebuild and update frontend
-docker build -t bloodbank-frontend:latest ./frontend
-kind load docker-image bloodbank-frontend:latest --name bloodbank-cluster
-kubectl rollout restart -n bloodbank deployment/frontend
+docker build -t prj-frontend:latest ./frontend
+kind load docker-image prj-frontend:latest --name prj-cluster
+kubectl rollout restart -n prj deployment/frontend
 
 # Check rollout status
-kubectl rollout status -n bloodbank deployment/backend
+kubectl rollout status -n prj deployment/backend
 ```
 
 ### Vault Operations
 
 ```powershell
 # View all secrets
-kubectl exec -n vault vault-0 -- vault kv list secret/bloodbank
+kubectl exec -n vault vault-0 -- vault kv list secret/prj
 
 # Read a secret
-kubectl exec -n vault vault-0 -- vault kv get secret/bloodbank/backend
+kubectl exec -n vault vault-0 -- vault kv get secret/prj/backend
 
 # Update a secret
-kubectl exec -n vault vault-0 -- vault kv put secret/bloodbank/backend \
+kubectl exec -n vault vault-0 -- vault kv put secret/prj/backend \
     jwt_secret=new-secret \
     api_key=11102004
 
 # After updating secrets, restart pods to re-inject
-kubectl rollout restart -n bloodbank deployment/backend
+kubectl rollout restart -n prj deployment/backend
 ```
 
 ---
@@ -444,7 +444,7 @@ kubectl rollout restart -n bloodbank deployment/backend
 docker ps
 
 # Delete and recreate cluster
-kind delete cluster --name bloodbank-cluster
+kind delete cluster --name prj-cluster
 .\k8s\scripts\setup.ps1
 ```
 
@@ -452,13 +452,13 @@ kind delete cluster --name bloodbank-cluster
 
 ```powershell
 # Check pod details
-kubectl describe pod -n bloodbank <pod-name>
+kubectl describe pod -n prj <pod-name>
 
 # Check node resources
 kubectl top nodes
 
 # Check events
-kubectl get events -n bloodbank --sort-by='.lastTimestamp'
+kubectl get events -n prj --sort-by='.lastTimestamp'
 ```
 
 ### Vault Issues
@@ -480,23 +480,23 @@ kubectl exec -n vault vault-0 -- vault status
 kubectl logs -n vault -l app=vault-agent-injector
 
 # Check pod annotations
-kubectl get pod -n bloodbank <pod-name> -o yaml | grep vault
+kubectl get pod -n prj <pod-name> -o yaml | grep vault
 
 # Verify Vault role
-kubectl exec -n vault vault-0 -- vault read auth/kubernetes/role/bloodbank-backend
+kubectl exec -n vault vault-0 -- vault read auth/kubernetes/role/prj-backend
 
 # Check if secret exists
-kubectl exec -n vault vault-0 -- vault kv get secret/bloodbank/backend
+kubectl exec -n vault vault-0 -- vault kv get secret/prj/backend
 ```
 
 **Problem**: Pod can't authenticate to Vault
 
 ```powershell
 # Check ServiceAccount
-kubectl get sa -n bloodbank bloodbank-backend-sa
+kubectl get sa -n prj prj-backend-sa
 
 # Check RBAC
-kubectl describe rolebinding -n bloodbank
+kubectl describe rolebinding -n prj
 
 # Check Vault auth config
 kubectl exec -n vault vault-0 -- vault read auth/kubernetes/config
@@ -508,13 +508,13 @@ kubectl exec -n vault vault-0 -- vault read auth/kubernetes/config
 
 ```powershell
 # Check PostgreSQL is running
-kubectl get pods -n bloodbank -l component=database
+kubectl get pods -n prj -l component=database
 
 # Test connection from backend pod
-kubectl exec -n bloodbank deployment/backend -- nc -zv postgres.bloodbank.svc.cluster.local 5432
+kubectl exec -n prj deployment/backend -- nc -zv postgres.prj.svc.cluster.local 5432
 
 # Check PostgreSQL logs
-kubectl logs -n bloodbank -l component=database
+kubectl logs -n prj -l component=database
 ```
 
 **Problem**: Frontend can't reach backend
@@ -524,10 +524,10 @@ kubectl logs -n bloodbank -l component=database
 curl http://localhost:30000/health
 
 # Test from frontend pod
-kubectl exec -n bloodbank deployment/frontend -- wget -qO- http://backend.bloodbank.svc.cluster.local:3000/health
+kubectl exec -n prj deployment/frontend -- wget -qO- http://backend.prj.svc.cluster.local:3000/health
 
 # Check NetworkPolicy
-kubectl describe networkpolicy -n bloodbank
+kubectl describe networkpolicy -n prj
 ```
 
 ### Network Issues
@@ -536,13 +536,13 @@ kubectl describe networkpolicy -n bloodbank
 
 ```powershell
 # Check service configuration
-kubectl get svc -n bloodbank
+kubectl get svc -n prj
 
 # Check port mappings
-docker ps | findstr bloodbank
+docker ps | findstr prj
 
 # Test directly from container
-docker exec bloodbank-cluster-control-plane curl http://localhost:30080
+docker exec prj-cluster-control-plane curl http://localhost:30080
 ```
 
 ---
@@ -593,15 +593,15 @@ docker exec bloodbank-cluster-control-plane curl http://localhost:30080
 
 ```powershell
 # Update secret in Vault
-kubectl exec -n vault vault-0 -- vault kv put secret/bloodbank/backend \
+kubectl exec -n vault vault-0 -- vault kv put secret/prj/backend \
     jwt_secret=new-jwt-secret-2024 \
     api_key=11102004
 
 # Restart pods to pick up new secrets
-kubectl rollout restart -n bloodbank deployment/backend
+kubectl rollout restart -n prj deployment/backend
 
 # Verify new secret is loaded
-kubectl logs -n bloodbank -l component=backend | grep "JWT"
+kubectl logs -n prj -l component=backend | grep "JWT"
 ```
 
 ---
@@ -621,8 +621,8 @@ kubectl logs -n bloodbank -l component=backend | grep "JWT"
 If you encounter issues:
 
 1. Check the [Troubleshooting](#troubleshooting) section
-2. Review logs: `kubectl logs -n bloodbank <pod-name>`
-3. Check events: `kubectl get events -n bloodbank`
+2. Review logs: `kubectl logs -n prj <pod-name>`
+3. Check events: `kubectl get events -n prj`
 4. Verify Vault: `kubectl exec -n vault vault-0 -- vault status`
 
 ---

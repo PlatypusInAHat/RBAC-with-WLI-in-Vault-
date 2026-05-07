@@ -1,4 +1,4 @@
-# K8s Demo - RBAC & Workload Identity with Vault
+﻿# K8s Demo - RBAC & Workload Identity with Vault
 
 Ứng dụng demo đơn giản để kiểm thử các tính năng Kubernetes:
 - **RBAC** (Role-Based Access Control)
@@ -52,14 +52,14 @@ chmod +x ./scripts/build-images.sh
 
 **Kind:**
 ```bash
-kind load docker-image bloodbank-backend:latest --name <your-cluster-name>
-kind load docker-image bloodbank-frontend:latest --name <your-cluster-name>
+kind load docker-image prj-backend:latest --name <your-cluster-name>
+kind load docker-image prj-frontend:latest --name <your-cluster-name>
 ```
 
 **Minikube:**
 ```bash
-minikube image load bloodbank-backend:latest
-minikube image load bloodbank-frontend:latest
+minikube image load prj-backend:latest
+minikube image load prj-frontend:latest
 ```
 
 ### 3. Deploy lên K8s
@@ -71,7 +71,7 @@ minikube image load bloodbank-frontend:latest
 ### 4. Kiểm tra deployment
 
 ```bash
-kubectl get pods -n bloodbank
+kubectl get pods -n prj
 kubectl get pods -n vault
 ```
 
@@ -80,10 +80,10 @@ kubectl get pods -n vault
 Port forward các services:
 ```bash
 # Frontend
-kubectl port-forward -n bloodbank svc/frontend 30080:3000
+kubectl port-forward -n prj svc/frontend 30080:3000
 
 # Backend (terminal mới)
-kubectl port-forward -n bloodbank svc/backend 30000:3000
+kubectl port-forward -n prj svc/backend 30000:3000
 
 # Vault (terminal mới)
 kubectl port-forward -n vault svc/vault 8200:8200
@@ -98,9 +98,9 @@ Mở browser:
 
 ### Service Accounts
 
-- `bloodbank-backend-sa` - Backend service account
-- `bloodbank-frontend-sa` - Frontend service account
-- `bloodbank-postgres-sa` - PostgreSQL service account
+- `prj-backend-sa` - Backend service account
+- `prj-frontend-sa` - Frontend service account
+- `prj-postgres-sa` - PostgreSQL service account
 
 ### Roles & Permissions
 
@@ -150,7 +150,7 @@ Test từ bên trong pod:
 
 ```bash
 # Vào backend pod
-kubectl exec -it -n bloodbank deploy/backend -- sh
+kubectl exec -it -n prj deploy/backend -- sh
 
 # Kiểm tra service account token
 cat /var/run/secrets/kubernetes.io/serviceaccount/token
@@ -167,10 +167,10 @@ curl http://localhost:3000/api/vault
 
 ```bash
 # Check pod có vault sidecar
-kubectl describe pod -n bloodbank <backend-pod-name> | grep vault
+kubectl describe pod -n prj <backend-pod-name> | grep vault
 
 # Check secrets được inject
-kubectl exec -n bloodbank <backend-pod-name> -- ls -la /vault/secrets/
+kubectl exec -n prj <backend-pod-name> -- ls -la /vault/secrets/
 ```
 
 ## 🌐 Network Policies
@@ -187,26 +187,26 @@ Network policies đã được configure:
 ### Pods không start
 
 ```bash
-kubectl get pods -n bloodbank
-kubectl describe pod -n bloodbank <pod-name>
-kubectl logs -n bloodbank <pod-name>
+kubectl get pods -n prj
+kubectl describe pod -n prj <pod-name>
+kubectl logs -n prj <pod-name>
 ```
 
 ### Vault Agent không inject
 
 Check annotations trong deployment:
 ```bash
-kubectl get deployment -n bloodbank backend -o yaml | grep vault
+kubectl get deployment -n prj backend -o yaml | grep vault
 ```
 
 ### Database connection lỗi
 
 ```bash
 # Check postgres pod
-kubectl get pods -n bloodbank | grep postgres
+kubectl get pods -n prj | grep postgres
 
 # Check logs
-kubectl logs -n bloodbank <postgres-pod>
+kubectl logs -n prj <postgres-pod>
 ```
 
 ## 📝 Files Structure
